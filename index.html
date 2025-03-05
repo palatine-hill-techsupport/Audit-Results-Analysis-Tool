@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+	<html lang="en">
+    <meta charset="UTF-8">
+    <title>JB-HS: Audit Results Analysis Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="https://www.jbhifi.com.au/cdn/shop/files/favicon_7cbca4eb-4222-41b7-a8f8-9dc52b7c4a7c_32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="https://www.jbhifi.com.au/cdn/shop/files/favicon_7cbca4eb-4222-41b7-a8f8-9dc52b7c4a7c_48x48.png" sizes="48x48" type="image/png">
+    <link rel="icon" href="https://www.jbhifi.com.au/cdn/shop/files/favicon_7cbca4eb-4222-41b7-a8f8-9dc52b7c4a7c_128x128.png" sizes="128x128" type="image/png">
+    <link rel="icon" href="https://www.jbhifi.com.au/cdn/shop/files/favicon_7cbca4eb-4222-41b7-a8f8-9dc52b7c4a7c_180x180.png" sizes="180x180" type="image/png">
+    <link rel="icon" href="https://www.jbhifi.com.au/cdn/shop/files/favicon_7cbca4eb-4222-41b7-a8f8-9dc52b7c4a7c_192x192.png" sizes="192x192" type="image/png">
+<head>
+<body>
+<div id="container">
+	<img id="logo" src="https://cdn.shopify.com/s/files/1/0024/9803/5810/files/JB_HiFi_Logo-Horizontal-Colour_e8f06929-662f-4edc-87c0-6d67cd2ee7dc.png?v=1709275181">
+    <h1>Home Services: Audit Results Analysis Tool</h1>
+	<a id="sflink" href="https://jbservices.lightning.force.com/lightning/r/Report/00ORF000000y8HF2AY/view">Click here to access "AUS Audit Result" on Salesforce and generate a compatible report for this app</a>
+	<div id="uploadbox">
+    	<input type="file" id="fileUpload" />
+    	<button id="gbutt" onclick="processFile()">Generate Report</button>
+	</div>
+    <div id="reportResults"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="scripts.js"></script>
+</div>
+</body>
+<footer>
+	Made by Denby Serrao-Arnot | <a href="#" id="changelog-link">Changelog</a>
+</footer>
+<!-- Changelog Popup -->
+<div id="changelog-popup" class="popup">
+    <div class="popup-content">
+        <span class="close-button">&times;</span>
+        <h2>Den's Audit Analysis App 🍷</h2>
+        <p>Built for Chrome & Edge. Need help? Find me on Teams (Denby) or <a href="mailto:denby.serraoarnot@jbhifi.com.au">email me</a>.</p>
+
+        <h3>Latest Updates</h3>
+        <p><b>1.2:</b> Fixed incorrect row data bug.</p>
+        <p><b>1.1:</b> Fixed graph issue on small screens.</p>
+        <p><b>1.0:</b> Improved UX & formatting.</p>
+
+        <h3>Earlier Versions</h3>
+        <p><b>0.9:</b> CX-friendly UI, added changelog popup.</p>
+        <p><b>0.8:</b> Favicon added, layout improvements.</p>
+        <p><b>0.7:</b> JB Hi-Fi styling, UI tweaks, emojis.</p>
+        <p><b>0.6:</b> UX/UI refinements.</p>
+        <p><b>0.5:</b> Missing photos graph (Chart.js), CSS fixes.</p>
+        <p><b>0.4:</b> Copy-to-clipboard, tech display fix.</p>
+        <p><b>0.3:</b> 2-column layout, refresh button.</p>
+        <p><b>0.2:</b> Styling & readability improvements.</p>
+        <p><b>0.1:</b> Core logic built with Cloudflare AJAX.</p>
+    </div>
+</div>
+
+</html>
