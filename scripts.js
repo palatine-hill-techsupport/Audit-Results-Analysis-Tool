@@ -1,30 +1,32 @@
-	function processFile() {
-		const fileUpload = document.getElementById("fileUpload").files[0];
-		if (!fileUpload) {
-			alert("Please select a file to upload.");
-			return;
-		}
-		const reader = new FileReader();
-		reader.onload = function(e) {
-			const data = new Uint8Array(e.target.result);
-			const workbook = XLSX.read(data, {type: 'array'});
-			const sheetName = workbook.SheetNames[0];
-			const sheet = workbook.Sheets[sheetName];
-			const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+function processFile() {
+    const fileUpload = document.getElementById("fileUpload").files[0];
+    if (!fileUpload) {
+        alert("Please select a file to upload.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
-			console.log("Parsed Data:", jsonData); // Log the parsed data structure
+        // Extract the content of B8 and remove the "Date Field:" part
+        const dateFieldString = sheet['B8'] && sheet['B8'].v ? sheet['B8'].v : "";  // Extract raw value from B8
+        const dateRange = dateFieldString.replace("Date Field:", "").trim();  // Remove "Date Field:" and trim spaces
 
-			const summary = calculateSummaryPerformance(jsonData);
-			const challenges = calculateCommonAuditChallenges(jsonData);
-			const stateResults = calculateResultsByState(jsonData);
-			const techResults = calculateTechPerformance(jsonData);
-			const topBottomTechs = calculateTopBottomTechs(techResults);
+        const summary = calculateSummaryPerformance(jsonData);
+        const challenges = calculateCommonAuditChallenges(jsonData);
+        const stateResults = calculateResultsByState(jsonData);
+        const techResults = calculateTechPerformance(jsonData);
+        const topBottomTechs = calculateTopBottomTechs(techResults);
 
-			displayResults(summary, challenges, stateResults, topBottomTechs, techResults);
-			generateChallengesChart(challenges);
-		};
-		reader.readAsArrayBuffer(fileUpload);
-	}
+        displayResults(summary, challenges, stateResults, topBottomTechs, techResults, dateRange);  // Pass the cleaned date range
+        generateChallengesChart(challenges);
+    };
+    reader.readAsArrayBuffer(fileUpload);
+}
 
         function calculateCommonAuditChallenges(data) {
             const challenges = {
@@ -163,71 +165,67 @@
 			return { topPerformers, focusTechs };
 		}
 
-		function displayResults(summary, challenges, states, topBottomTechs, techs) {
-			const resultDiv = document.getElementById("reportResults");
+function displayResults(summary, challenges, states, topBottomTechs, techs, dateRange) {
+    const resultDiv = document.getElementById("reportResults");
 
-			// Extract the Date Audited string (Date Field: Date Audited equals This FW ...)
-			const dateFieldString = "Date Audited equals This FW (24/3/2025 to 30/3/2025)";  // Replace with dynamic extraction logic
-			const dateRange = dateFieldString.replace("Date Field: ", "");
+    resultDiv.innerHTML = `
+        <!-- Date Range Section -->
+        <div id="date-range">
+            <h2>${dateRange}</h2>
+        </div>
 
-			resultDiv.innerHTML = `
-				<!-- Date Range Section -->
-				<div id="date-range">
-					<h2>${dateRange}</h2>
-				</div>
+        <div id="headertitle">
+            <h1>Summary of Performance</h1>
+            <p><h2><span class="pass">Passes: ${summary.passCount} (${summary.passPercentage}%)</span></h2></p>
+            <p><h2><span class="fail">Fails: ${summary.failCount} (${summary.failPercentage}%)</span></h2></p>
+        </div>
 
-				<div id="headertitle">
-					<h1>Summary of Performance</h1>
-					<p><h2><span class="pass">Passes: ${summary.passCount} (${summary.passPercentage}%)</span></h2></p>
-					<p><h2><span class="fail">Fails: ${summary.failCount} (${summary.failPercentage}%)</span></h2></p>
-				</div>
+        <div id="challengesChartContainer">
+            <canvas id="challengesChart"></canvas>
+        </div>
 
-				<div id="challengesChartContainer">
-					<canvas id="challengesChart"></canvas>
-				</div>
+        <details>
+            <summary><h2>👆 Missing Photos by category</h2></summary>
+            ${challenges.map(([key, count]) => `<p>${key}: ${count}</p>`).join('')}
+        </details>          
+        <br>
 
-				<details>
-					<summary><h2>👆 Missing Photos by category</h2></summary>
-					${challenges.map(([key, count]) => `<p>${key}: ${count}</p>`).join('')}
-				</details>          
-				<br>
-
-				<h2>Results by State</h2>
-				${Object.entries(states).map(([state, counts]) => `<p>${state}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span></p>`).join('')}
-				<br>
-				
-				<details>
-					<summary><h2>👆 Individual Technician Results</h2></summary>
-					${Object.entries(techs)
-						.map(([tech, counts]) => {
-							// Calculate pass rate
-							const passRate = (counts.pass / counts.total) * 100;
-							return {
-								tech,
-								passRate, // Store passRate in the object for sorting
-								counts
-							};
-						})
-						// Sort by passRate in descending order
-						.sort((a, b) => b.passRate - a.passRate)
-						.map(({ tech, counts, passRate }) => {
-							return `<p>${tech}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span> (${counts.total} jobs) <span class="pass-rate">Pass Rate - ${passRate.toFixed(2)}%</span></p>`;
-						})
-						.join('')}
-				</details>
-				<br>
-				
-				<h2>Top Performers & Technicians to Focus On</h2>
-				<h3>Top 5</h3>
-				${topBottomTechs.topPerformers.map(tech => `<p>${tech.tech}: Pass Rate - ${(tech.passRate * 100).toFixed(2)}% (${tech.totalJobs} jobs)</p>`).join('')}
-			
-				<h3>Bottom 5</h3>
-				${topBottomTechs.focusTechs.map(tech => {
-					const passRate = tech.totalJobs > 0 ? ((tech.passCount / tech.totalJobs) * 100).toFixed(2) : "0.00";
-					return `<p>${tech.tech}: Pass Rate - ${passRate}% (${tech.totalJobs} jobs)</p>`;
-				}).join('')}
-			`;
-		}
+        <h2>Results by State</h2>
+        ${Object.entries(states).map(([state, counts]) => `<p>${state}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span></p>`).join('')}
+        <br>
+        
+        <details>
+            <summary><h2>👆 Individual Technician Results</h2></summary>
+            ${Object.entries(techs)
+                .map(([tech, counts]) => {
+                    // Calculate pass rate
+                    const passRate = (counts.pass / counts.total) * 100;
+                    return {
+                        tech,
+                        passRate, // Store passRate in the object for sorting
+                        counts
+                    };
+                })
+                // Sort by passRate in descending order
+                .sort((a, b) => b.passRate - a.passRate)
+                .map(({ tech, counts, passRate }) => {
+                    return `<p>${tech}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span> (${counts.total} jobs) <span class="pass-rate">Pass Rate - ${passRate.toFixed(2)}%</span></p>`;
+                })
+                .join('')}
+        </details>
+        <br>
+        
+        <h2>Top Performers & Technicians to Focus On</h2>
+        <h3>Top 5</h3>
+        ${topBottomTechs.topPerformers.map(tech => `<p>${tech.tech}: Pass Rate - ${(tech.passRate * 100).toFixed(2)}% (${tech.totalJobs} jobs)</p>`).join('')}
+    
+        <h3>Bottom 5</h3>
+        ${topBottomTechs.focusTechs.map(tech => {
+            const passRate = tech.totalJobs > 0 ? ((tech.passCount / tech.totalJobs) * 100).toFixed(2) : "0.00";
+            return `<p>${tech.tech}: Pass Rate - ${passRate}% (${tech.totalJobs} jobs)</p>`;
+        }).join('')}
+    `;
+}
 
 		function generateChallengesChart(challenges) {
 			const chartContainer = document.getElementById('challengesChartContainer');
