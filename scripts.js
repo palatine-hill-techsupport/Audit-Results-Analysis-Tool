@@ -165,17 +165,27 @@
 
 		function displayResults(summary, challenges, states, topBottomTechs, techs) {
 			const resultDiv = document.getElementById("reportResults");
+
+			// Extract the Date Audited string (Date Field: Date Audited equals This FW ...)
+			const dateFieldString = "Date Audited equals This FW (24/3/2025 to 30/3/2025)";  // Replace with dynamic extraction logic
+			const dateRange = dateFieldString.replace("Date Field: ", "");
+
 			resultDiv.innerHTML = `
+				<!-- Date Range Section -->
+				<div id="date-range">
+					<h2>${dateRange}</h2>
+				</div>
+
 				<div id="headertitle">
 					<h1>Summary of Performance</h1>
 					<p><h2><span class="pass">Passes: ${summary.passCount} (${summary.passPercentage}%)</span></h2></p>
 					<p><h2><span class="fail">Fails: ${summary.failCount} (${summary.failPercentage}%)</span></h2></p>
 				</div>
-				
+
 				<div id="challengesChartContainer">
 					<canvas id="challengesChart"></canvas>
 				</div>
-				
+
 				<details>
 					<summary><h2>👆 Missing Photos by category</h2></summary>
 					${challenges.map(([key, count]) => `<p>${key}: ${count}</p>`).join('')}
@@ -198,7 +208,7 @@
 				<h2>Top Performers & Technicians to Focus On</h2>
 				<h3>Top 5</h3>
 				${topBottomTechs.topPerformers.map(tech => `<p>${tech.tech}: Pass Rate - ${(tech.passRate * 100).toFixed(2)}% (${tech.totalJobs} jobs)</p>`).join('')}
-		
+			
 				<h3>Bottom 5</h3>
 				${topBottomTechs.focusTechs.map(tech => {
 					const passRate = tech.totalJobs > 0 ? ((tech.passCount / tech.totalJobs) * 100).toFixed(2) : "0.00";
@@ -207,54 +217,54 @@
 			`;
 		}
 
-function generateChallengesChart(challenges) {
-    const chartContainer = document.getElementById('challengesChartContainer');
-    const canvas = document.getElementById('challengesChart');
-    
-    // Set canvas width and height dynamically
-    canvas.width = chartContainer.offsetWidth;
-    canvas.height = Math.max(challenges.length * 25, 500);
+		function generateChallengesChart(challenges) {
+			const chartContainer = document.getElementById('challengesChartContainer');
+			const canvas = document.getElementById('challengesChart');
+			
+			// Set canvas width and height dynamically
+			canvas.width = chartContainer.offsetWidth;
+			canvas.height = Math.max(challenges.length * 25, 500);
 
-    const ctx = canvas.getContext('2d');
+			const ctx = canvas.getContext('2d');
 
-    // Ensure all categories are shown, even those with zero count
-    const labels = challenges.map(([key]) => key);
-    const data = challenges.map(([, count]) => count);
+			// Ensure all categories are shown, even those with zero count
+			const labels = challenges.map(([key]) => key);
+			const data = challenges.map(([, count]) => count);
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Number of Cases',
-                data: data,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Cases'
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Most Frequently Missing Photos (HST Comments) - Sorted by Frequency'
-                }
-            }
-        }
-    });
-}
+			new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: 'Number of Cases',
+						data: data,
+						backgroundColor: 'rgba(75, 192, 192, 0.6)',
+						borderColor: 'rgba(75, 192, 192, 1)',
+						borderWidth: 1
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					indexAxis: 'y',
+					scales: {
+						x: {
+							beginAtZero: true,
+							title: {
+								display: true,
+								text: 'Number of Cases'
+							}
+						}
+					},
+					plugins: {
+						title: {
+							display: true,
+							text: 'Most Frequently Missing Photos (HST Comments) - Sorted by Frequency'
+						}
+					}
+				}
+			});
+		}
 
 document.addEventListener("DOMContentLoaded", function() {
 	const changelogPopup = document.getElementById('changelog-popup');
