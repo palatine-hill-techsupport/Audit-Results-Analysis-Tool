@@ -199,8 +199,20 @@
 				<details>
 					<summary><h2>👆 Individual Technician Results</h2></summary>
 					${Object.entries(techs)
-						.sort((a, b) => b[1].total - a[1].total)
-						.map(([tech, counts]) => `<p>${tech}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span> (${counts.total} jobs)</p>`)
+						.map(([tech, counts]) => {
+							// Calculate pass rate
+							const passRate = (counts.pass / counts.total) * 100;
+							return {
+								tech,
+								passRate, // Store passRate in the object for sorting
+								counts
+							};
+						})
+						// Sort by passRate in descending order
+						.sort((a, b) => b.passRate - a.passRate)
+						.map(({ tech, counts, passRate }) => {
+							return `<p>${tech}: <span class="pass">Pass - ${counts.pass}</span>, <span class="fail">Fail - ${counts.fail}</span> (${counts.total} jobs) <span class="pass-rate">Pass Rate - ${passRate.toFixed(2)}%</span></p>`;
+						})
 						.join('')}
 				</details>
 				<br>
